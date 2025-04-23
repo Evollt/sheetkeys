@@ -1,3 +1,8 @@
+0.6 (unreleased)
+
+* Support links to cells in the current sheet when opening links
+  ([#34](https://github.com/philc/sheetkeys/issues/34))
+
 0.5 (2024-06-12)
 
 * Make compatible with the latest version of Google Sheets
