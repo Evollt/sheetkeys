@@ -1,11 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "SheetKeys",
-  "version": "0.5",
+  "name": "Evollt SheetKeys",
+  "version": "0.1",
   "description": "SheetKeys adds powerful keyboard shortcuts to Google Sheets, in the spirit of the Vim text editor.",
-  "permissions": [
-    "storage"
-  ],
+  "permissions": ["storage"],
   "icons": {
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
@@ -13,10 +11,6 @@
   "background": {
     "service_worker": "background_script.js"
   },
-  // Uncommenting this will make this page accessible by navigating to chrome://extensions and clicking on the
-  // Options page for SheetKeys. This is useful while working on the help dialog UI, because it's is faster to
-  // load the options page without having to load frequently reload a heavy-weight Google Sheets page.
-  // "options_page": "harnesses/help_dialog_harness.html",
   "content_scripts": [
     {
       "matches": [
