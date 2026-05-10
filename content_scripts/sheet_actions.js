@@ -2,7 +2,7 @@ const SheetActions = {
   // NOTE(philc): When developing, you can use this snippet to preview all available menu items:
   // Array.from(document.querySelectorAll(".goog-menuitem")).forEach((i) => console.log(i.innerText))
   menuItems: {
-    copy: { parent: "Edit", caption: "Copy" },
+    copy: { parent: "Edit", caption: "CopyCtrl+C" },
     delete: { parent: "Edit", caption: "Delete►" },
     // Avoid matching the menu item "Column stats".
     deleteColumn: { parent: "Edit", caption: /^Column[s]? (?!stats)/ },
@@ -130,7 +130,9 @@ const SheetActions = {
     for (const caption of Array.from(captionList)) {
       const els = document.querySelectorAll(`*[aria-label='${caption}']`);
       if (els.length == 0) {
-        console.log(`Couldn't find the element for the button labeled ${caption}.`);
+        console.log(
+          `Couldn't find the element for the button labeled ${caption}.`,
+        );
         console.log(captionList);
         return;
       }
@@ -157,10 +159,11 @@ const SheetActions = {
     if (el) return el;
     el = this.findMenuItem(menuItem);
     if (!el) {
-      if (!silenceWarning) console.error("Could not find menu item with caption", caption);
+      if (!silenceWarning)
+        console.error("Could not find menu item with caption", caption);
       return null;
     }
-    return this.menuItemElements[caption] = el;
+    return (this.menuItemElements[caption] = el);
   },
 
   findMenuItem(menuItem) {
@@ -192,7 +195,9 @@ const SheetActions = {
     // First we must open the palette; only then can we reliably get the color button that pertains
     // to that color palette.
     const paletteButton = document.querySelector(
-      (type == "cell") ? "*[aria-label='Fill color']" : "*[aria-label='Text color']",
+      type == "cell"
+        ? "*[aria-label='Fill color']"
+        : "*[aria-label='Text color']",
     );
     KeyboardUtils.simulateClick(paletteButton);
 
@@ -201,7 +206,10 @@ const SheetActions = {
     assert(palette, `Unable to find element for ${type} panel.`);
     const selector = `*[aria-label='${color}']`;
     const colorButton = palette.querySelector(selector);
-    assert(colorButton, `Couldn't find the color button with selector ${selector}`);
+    assert(
+      colorButton,
+      `Couldn't find the color button with selector ${selector}`,
+    );
 
     // Hide the color palette. This isn't strictly necessary because any other click on the document
     // will also result in hiding the palette.
@@ -252,7 +260,9 @@ const SheetActions = {
   },
 
   selectedCellCoords() {
-    const box = document.querySelector(".active-cell-border").getBoundingClientRect();
+    const box = document
+      .querySelector(".active-cell-border")
+      .getBoundingClientRect();
     // Offset this box by > 0 so we don't select the borders around the selected cell.
     // NOTE(philc): I've chosen 5 here instead of 1 because > 1 is required when the document is zoomed.
     const margin = 5;
@@ -282,7 +292,9 @@ const SheetActions = {
     // shortcut has issues, so here we click on the appropriate column.
     const activeCellLeft = this.selectedCellCoords().left;
     // The column header is at the top of the grid portion of the UI (the waffle container).
-    const gridTop = document.getElementById("waffle-grid-container").getBoundingClientRect().top;
+    const gridTop = document
+      .getElementById("waffle-grid-container")
+      .getBoundingClientRect().top;
     // +1 was chosen empirically, and is necessary when the document is zoomed.
     const yOffset = gridTop + 1;
     const colMarginEl = document.elementFromPoint(activeCellLeft, yOffset);
@@ -311,19 +323,19 @@ const SheetActions = {
   // Movement
   //
   moveUp() {
-    const keyOptions = (this.mode == "normal") ? {} : { shift: true };
+    const keyOptions = this.mode == "normal" ? {} : { shift: true };
     this.typeKeyFn(KeyboardUtils.keyCodes.up, keyOptions);
   },
   moveDown() {
-    const keyOptions = (this.mode == "normal") ? {} : { shift: true };
+    const keyOptions = this.mode == "normal" ? {} : { shift: true };
     this.typeKeyFn(KeyboardUtils.keyCodes.down, keyOptions);
   },
   moveLeft() {
-    const keyOptions = (this.mode == "normal") ? {} : { shift: true };
+    const keyOptions = this.mode == "normal" ? {} : { shift: true };
     this.typeKeyFn(KeyboardUtils.keyCodes.left, keyOptions);
   },
   moveRight() {
-    const keyOptions = (this.mode == "normal") ? {} : { shift: true };
+    const keyOptions = this.mode == "normal" ? {} : { shift: true };
     this.typeKeyFn(KeyboardUtils.keyCodes.right, keyOptions);
   },
 
@@ -513,7 +525,8 @@ const SheetActions = {
   // The approximate number of visible rows. It's probably possible to compute this precisely.
   visibleRowCount() {
     return Math.ceil(
-      document.querySelector(".grid-scrollable-wrapper").offsetHeight / this.rowHeight(),
+      document.querySelector(".grid-scrollable-wrapper").offsetHeight /
+        this.rowHeight(),
     );
   },
 
@@ -591,7 +604,9 @@ const SheetActions = {
     // This tab menu element gets created the first time the user clicks on it, so it may not yet be
     // available in the DOM.
     if (!menu) this.activateTabMenu();
-    const menuItems = document.querySelectorAll(".docs-sheet-tab-menu .goog-menuitem");
+    const menuItems = document.querySelectorAll(
+      ".docs-sheet-tab-menu .goog-menuitem",
+    );
     let result = null;
     for (const item of Array.from(menuItems)) {
       if (item.innerText.indexOf(buttonCaption) === 0) {
@@ -600,7 +615,9 @@ const SheetActions = {
       }
     }
     if (!result) {
-      console.log(`Couldn't find a tab menu item with the caption ${buttonCaption}`);
+      console.log(
+        `Couldn't find a tab menu item with the caption ${buttonCaption}`,
+      );
       return;
     }
     KeyboardUtils.simulateClick(result);
@@ -614,7 +631,9 @@ const SheetActions = {
     const buttons = Array.from(document.querySelectorAll(".menu-button"));
     const button = buttons.find((el) => el.innerText.trim() == menuCaption);
     if (!button) {
-      throw new Error(`Couldn't find top-level button with caption ${menuCaption}`);
+      throw new Error(
+        `Couldn't find top-level button with caption ${menuCaption}`,
+      );
     }
     // Unlike submenus, top-level menus can be hidden by clicking the button a second time to
     // dismiss the menu.
@@ -639,7 +658,9 @@ const SheetActions = {
   // Shows and then hides the tab menu for the currently selected tab. This has the side effect of
   // forcing Sheets to create the menu DOM element if it hasn't yet been created.
   activateTabMenu() {
-    const menuButton = document.querySelector(".docs-sheet-active-tab .docs-icon-arrow-dropdown");
+    const menuButton = document.querySelector(
+      ".docs-sheet-active-tab .docs-icon-arrow-dropdown",
+    );
     // Show and then hide the tab menu.
     KeyboardUtils.simulateClick(menuButton);
     KeyboardUtils.simulateClick(menuButton);
@@ -681,10 +702,14 @@ const SheetActions = {
     // As of 2023-07-22, there are two toolbar buttons with aria-label="clip", so we have to
     // distinguish between them. To do this using re using the element's ID. This is brittle because
     // the element IDs are an implementation detail.
-    const getToolbarIcons = (caption) => document.querySelectorAll(`*[aria-label='${caption}']`);
+    const getToolbarIcons = (caption) =>
+      document.querySelectorAll(`*[aria-label='${caption}']`);
 
     const els = getToolbarIcons(this.buttons.clip[0]);
-    assert(els.length == 1, "Received unexpected results querying for " + this.buttons.clip[0]);
+    assert(
+      els.length == 1,
+      "Received unexpected results querying for " + this.buttons.clip[0],
+    );
     KeyboardUtils.simulateClick(els[0]);
 
     const button = document.querySelector("#t-textwrap-clip");
@@ -773,8 +798,10 @@ const SheetActions = {
         url = URL.parse(text);
       } catch (error) {}
 
-      const isLinkToCell = text.startsWith("#") ||
-        (url?.hash && urlWithoutFragment(url) == urlWithoutFragment(window.location));
+      const isLinkToCell =
+        text.startsWith("#") ||
+        (url?.hash &&
+          urlWithoutFragment(url) == urlWithoutFragment(window.location));
       if (isLinkToCell) {
         window.location.hash = url?.hash || text;
       } else {
@@ -782,7 +809,9 @@ const SheetActions = {
       }
     };
 
-    const formulaBar = document.querySelector("#t-formula-bar-input-container .cell-input");
+    const formulaBar = document.querySelector(
+      "#t-formula-bar-input-container .cell-input",
+    );
     const embeddedLinks = formulaBar.querySelectorAll("a");
     const formulaText = formulaBar.textContent.trim();
     // Now that we have the cell's content, we can exit from editing the cell.
