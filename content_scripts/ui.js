@@ -22,6 +22,67 @@ const addOneTimeListener = function (dispatcher, eventType, listenerFn) {
 const MAX_KEY_MAPPING_LENGTH = 6;
 const RICH_TEXT_EDITOR_ID = "waffle-rich-text-editor";
 
+const RU_TO_EN = {
+  й: "q",
+  ц: "w",
+  у: "e",
+  к: "r",
+  е: "t",
+  н: "y",
+  г: "u",
+  ш: "i",
+  щ: "o",
+  з: "p",
+  х: "[",
+  ъ: "]",
+  ф: "a",
+  ы: "s",
+  в: "d",
+  а: "f",
+  п: "g",
+  р: "h",
+  о: "j",
+  л: "k",
+  д: "l",
+  ж: ";",
+  э: "'",
+  я: "z",
+  ч: "x",
+  с: "c",
+  м: "v",
+  и: "b",
+  т: "n",
+  ь: "m",
+  б: ",",
+  ю: ".",
+  Й: "Q",
+  Ц: "W",
+  У: "E",
+  К: "R",
+  Е: "T",
+  Н: "Y",
+  Г: "U",
+  Ш: "I",
+  Щ: "O",
+  З: "P",
+  Ф: "A",
+  Ы: "S",
+  В: "D",
+  А: "F",
+  П: "G",
+  Р: "H",
+  О: "J",
+  Л: "K",
+  Д: "L",
+  Я: "Z",
+  Ч: "X",
+  С: "C",
+  М: "V",
+  И: "B",
+  Т: "N",
+  Ь: "M",
+};
+
 class UI {
   // Keys which were typed recently
   keyQueue = [];
@@ -38,7 +99,10 @@ class UI {
     // message.
     addOneTimeListener(window, "focus", () => {
       // We have to wait 1 second because the DOM is not yet ready to be clicked on.
-      return setTimeout(() => SheetActions.dismissFullScreenNotificationMessage(), 1000);
+      return setTimeout(
+        () => SheetActions.dismissFullScreenNotificationMessage(),
+        1000,
+      );
     });
 
     // Key event handlers fire on window before they do on document. Prefer window for key events so
@@ -88,7 +152,9 @@ class UI {
   isEditable(el) {
     // Note that the window object doesn't have a tagname.
     const tagName = el.tagName ? el.tagName.toLowerCase() : null;
-    return el.isContentEditable || tagName === "input" || tagName === "textarea";
+    return (
+      el.isContentEditable || tagName === "input" || tagName === "textarea"
+    );
   }
 
   onFocus(event) {
@@ -113,7 +179,9 @@ class UI {
           if (SheetActions.mode == "disabled") {
             return;
           }
-          this.isEditorEditing() ? SheetActions.setMode("insert") : SheetActions.setMode("normal");
+          this.isEditorEditing()
+            ? SheetActions.setMode("insert")
+            : SheetActions.setMode("normal");
         });
         observer.observe(this.editor.parentNode, {
           attributes: true,
@@ -162,12 +230,16 @@ class UI {
   }
 
   onKeydown(e) {
-    const keyString = KeyboardUtils.getKeyString(e);
+    let keyString = KeyboardUtils.getKeyString(e);
     // console.log("keydown event. keyString:", keyString, e.keyCode, e.keyIdentifier, e);
     if (this.ignoreKeys || SheetActions.mode == "disabled") return;
 
     // Ignore key presses which are just modifiers.
     if (!keyString) return;
+
+    if (SheetActions.mode !== "replace") {
+      keyString = RU_TO_EN[keyString] ?? keyString;
+    }
 
     // In replace mode, we're waiting for one character to be typed, and we will replace the cell's
     // contents with that character and then return to normal mode.
@@ -210,10 +282,14 @@ class UI {
     const modePrefixes = this.keyMappingsPrefixes[modeToUse] || [];
     // See if a bound command matches the typed key sequence. If so, execute it.
     // Prioritize longer mappings over shorter mappings.
-    for (let i = Math.min(MAX_KEY_MAPPING_LENGTH, this.keyQueue.length); i >= 1; i--) {
-      const keySequence = this.keyQueue.slice(this.keyQueue.length - i, this.keyQueue.length).join(
-        Commands.KEY_SEPARATOR,
-      );
+    for (
+      let i = Math.min(MAX_KEY_MAPPING_LENGTH, this.keyQueue.length);
+      i >= 1;
+      i--
+    ) {
+      const keySequence = this.keyQueue
+        .slice(this.keyQueue.length - i, this.keyQueue.length)
+        .join(Commands.KEY_SEPARATOR);
       // If this key could be part of one of the bound key mapping, don't pass it through to the
       // page. Also, if some longer mapping partially matches this key sequence, then wait for more
       // keys, and don't immediately apply a shorter mapping which also matches this key sequence.
@@ -246,10 +322,11 @@ class UI {
     if (keyCode == null) throw "The keyCode provided to typeKey() is null.";
     this.ignoreKeys = true;
     if (!modifiers) modifiers = {};
-    document.getElementById("sheetkeys-json-message").innerText = JSON.stringify({
-      keyCode,
-      mods: modifiers,
-    });
+    document.getElementById("sheetkeys-json-message").innerText =
+      JSON.stringify({
+        keyCode,
+        mods: modifiers,
+      });
     window.dispatchEvent(new CustomEvent("sheetkeys-simulate-key-event", {}));
     this.ignoreKeys = false;
   }
@@ -258,14 +335,19 @@ class UI {
     // When you hide a DOM element, Google's Waffle grid doesn't know to reflow and take up the full
     // viewport. You can trigger a reflow by resizing the browser or by clicking on the Explore
     // button in the lower-left corner.
-    const exploreButton = document.querySelector(".waffle-assistant-entry [role=button]");
+    const exploreButton = document.querySelector(
+      ".waffle-assistant-entry [role=button]",
+    );
     KeyboardUtils.simulateClick(exploreButton);
     KeyboardUtils.simulateClick(exploreButton); // Click twice to show and then hide.
   }
 }
 
 // Don't initialize this Sheets UI if this code is being loaded from our extension's options page.
-if (globalThis.document && !globalThis.document.location.pathname.endsWith("harness.html")) {
+if (
+  globalThis.document &&
+  !globalThis.document.location.pathname.endsWith("harness.html")
+) {
   UI.instance = new UI();
   UI.instance.init();
 }
